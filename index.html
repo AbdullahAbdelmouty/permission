@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>تصريح العمل</title>
+    <style>
+        body {
+            direction: rtl;
+        }
+        .worker-section {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<form id="permitForm">
+    <label for="companyNameAr">إسم الشركة بالعربي:</label>
+    <input type="text" id="companyNameAr" name="companyNameAr"><br><br>
+
+    <label for="companyNameEn">إسم الشركة بالإنجليزي:</label>
+    <input type="text" id="companyNameEn" name="companyNameEn"><br><br>
+    
+    <label for="purpose">الغرض من التواجد:</label>
+    <input type="text" id="purpose" name="purpose"><br><br>
+
+    <label for="startDate">تاريخ بداية التصريح:</label>
+    <input type="date" id="startDate" name="startDate" min=""><br><br>
+
+    <label for="endDate">تاريخ نهاية التصريح:</label>
+    <input type="date" id="endDate" name="endDate" min=""><br><br>
+
+    <div id="workers">
+        <!-- أسماء العمال سيتم إضافتها هنا -->
+    </div>
+    <button type="button" onclick="addWorker()">+ إضافة عامل</button><br><br>
+
+    <label for="issuerName">إسم مصدر التصريح:</label>
+    <input type="text" id="issuerName" name="issuerName"><br><br>
+
+    <label for="signature">التوقيع الإلكتروني:</label>
+    <input type="text" id="signature" name="signature"><br><br>
+</form>
+
+<script>
+var workersCount = 0;
+
+function addWorker() {
+    workersCount++;
+    var div = document.createElement('div');
+    div.setAttribute('class', 'worker-section');
+    div.setAttribute('id', 'worker' + workersCount);
+    div.innerHTML = `
+        <h3>عامل ${workersCount}</h3>
+        <label>الاسم:</label>
+        <input type="text" id="workerName${workersCount}"><br><br>
+        <label>الوظيفة:</label>
+        <input type="text" id="workerJob${workersCount}"><br><br>
+        <label>رفع الصورة:</label>
+        <input type="file" id="workerImage${workersCount}" accept="image/*"><br><br>
+        <button type="button" onclick="removeWorker(${workersCount})">- إلغاء عامل</button>
+    `;
+    document.getElementById('workers').appendChild(div);
+}
+
+function removeWorker(workerNumber) {
+    var workerDiv = document.getElementById('worker' + workerNumber);
+    if (workerDiv) {
+        workerDiv.remove();
+    }
+}
+
+document.getElementById('startDate').addEventListener('change', function() {
+    var startDate = new Date(this.value);
+    var endDate = new Date(this.value);
+    endDate.setDate(startDate.getDate() + 29);
+    
+    document.getElementById('endDate').min = this.value;
+    document.getElementById('endDate').max = endDate.toISOString().split('T')[0];
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    var today = new Date().toISOString().split('T')[0];
+    document.getElementById('startDate').setAttribute('min', today);
+    document.getElementById('endDate').setAttribute('min', today);
+});
+</script>
+
+</body>
+</html>

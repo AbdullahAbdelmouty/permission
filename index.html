@@ -1,8 +1,13 @@
 <!DOCTYPE html>
 <html lang="ar">
+
 <head>
     <meta charset="UTF-8">
     <title>تصريح العمل</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
     <style>
         body {
             direction: rtl;
@@ -64,7 +69,8 @@ input[type="date"]:focus,
 }
 
 /* Add worker button  */
-button[type="button"] {
+button[type="button"],
+button[type="submit"] {
     padding: 12px 24px;
     background-color: #fa66ab;
     color: #fff;
@@ -130,6 +136,7 @@ button[type="button"]:hover {
 
 
     </style>
+
 </head>
 <body>
 
@@ -159,11 +166,10 @@ button[type="button"]:hover {
 
     <label for="signature">التوقيع الإلكتروني:</label>
     <input type="text" id="signature" name="signature"><br><br>
+    <button type="submit" id="submit">إنشاء التصريح</button>
 </form>
-
 <script>
 var workersCount = 0;
-
 function addWorker() {
     workersCount++;
     var div = document.createElement('div');
@@ -203,7 +209,120 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('startDate').setAttribute('min', today);
     document.getElementById('endDate').setAttribute('min', today);
 });
+
+document.getElementById('submit').addEventListener('click', function(e) {
+         e.preventDefault();
+         // Get form data
+         var companyNameAr = document.getElementById('companyNameAr').value;
+         var companyNameEn = document.getElementById('companyNameEn').value;
+         var purpose = document.getElementById('purpose').value;
+         var startDate = document.getElementById('startDate').value;
+         var endDate = document.getElementById('endDate').value;
+         var issuerName = document.getElementById('issuerName').value;
+         var signature = document.getElementById('signature').value;
+         console.log(issuerName,'issuerName');
+         console.log(signature,'signature');
+         console.log(companyNameAr,'companyNameAr');
+         console.log(companyNameEn,'companyNameEn');
+         console.log(purpose,'purpose');
+         console.log(startDate,'startDate');
+         console.log(endDate,'endDate');
+
+         // Get workers data
+         var workers = [];
+         for (var i = 1; i <= workersCount; i++) {
+             var workerName = document.getElementById('workerName' + i).value;
+             var workerJob = document.getElementById('workerJob' + i).value;
+             var workerImage = document.getElementById('workerImage' + i).files[0];
+             workers.push({
+                 name: workerName,
+                 job: workerJob,
+                 image: workerImage
+             });
+         }
+
+
+         // Create a single HTML element by adding form data
+         var element = document.createElement('div');
+         element.innerHTML = '<style>' +
+   'body { font-family: Arial, sans-serif; }' +
+   'h1 { font-size: 24px; color: #333; margin-bottom: 20px; }' +
+   'label { font-weight: bold; display: block; margin-bottom: 10px; }' +
+   'div { margin-bottom: 20px; border-bottom: 2px solid #ccc; padding-bottom: 10px; }' +
+   'p { margin: 0; }' +
+   '</style>' +
+   '<div style="border-bottom: none; text-align: center;"><label style="text-align: center;">إسم الشركة بالعربي:</label><p style="font-weight: bold; font-size: 18px;">' + companyNameAr + '</p></div>' +
+   '<div><label style="text-align: center;">إسم الشركة بالإنجليزي:</label><p style="text-align: center;">' + companyNameEn + '</p></div>' +
+   '<div><label style="text-align: center;">الغرض من التواجد:</label><p style="text-align: center;">' + purpose + '</p></div>' +
+   '<div><label style="text-align: center;">تاريخ بداية التصريح:</label><p style="text-align: center;">' + startDate + '</p></div>' +
+   '<div><label style="text-align: center;">تاريخ نهاية التصريح:</label><p style="text-align: center;">' + endDate + '</p></div>' +
+   '<div><label style="text-align: center;">إسم مصدر التصريح:</label><p style="text-align: center;">' + issuerName + '</p></div>' +
+   '<div><label style="text-align: center;">التوقيع الإلكتروني:</label><p style="text-align: center;">' + signature + '</p></div>'+
+   '<div><label style="text-align: center;">العمال:</label></div>';
+
+         workers.forEach(function(worker, index) {
+             var workerElement = document.createElement('div');
+             workerElement.innerHTML = '<label style="text-align: center;">عامل ' + (index + 1) + '</label>' +
+                 '<div><label>الاسم:</label><p>' + worker.name + '</p></div>' +
+                 '<div><label>الوظيفة:</label><p>' + worker.job + '</p></div>';
+             element.appendChild(workerElement);
+         })
+         ;
+         element.setAttribute('id', 'contentToPrint');
+        document.body.appendChild(element);
+         console.log(element);
+         window.jsPDF = window.jspdf.jsPDF;
+         // Create a new PDF using the form element
+        //  html2pdf().from(element).save();
+        //  Get the HTML element to be converted to PDF
+        const elemente = document.getElementById('permitForm');
+        html2canvas(elemente).then(canvas => {
+        const imgData = canvas.toDataURL('image/png'); // Convert canvas to image data
+        const pdf = new jsPDF(); // Initialize jsPDF
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight); // Add image to PDF
+        pdf.save('converted-document.pdf'); // Save PDF
+        });
+        // convert HTML to PDF using jsPDF  
+        // window.jsPDF = window.jspdf.jsPDF;
+        // var doc = new jsPDF()
+        // doc.text("بسم الله", 10, 10);
+        // doc.save("d.pdf")
+    //     doc.html(document.getElementById('contentToPrint'), {
+    //     callback: function(doc) {
+    //         // Save the PDF
+    //         doc.save('document-html.pdf');
+    //     },
+    //     margin: [10, 10, 10, 10],
+    //     autoPaging: 'text',
+    //     x: 0,
+    //     y: 0,
+    //     width: 190, //target width in the PDF document
+    //     windowWidth: 675 //window width in CSS pixels
+    // });
+    //     html2canvas(document.getElementById('contentToPrint')).then(canvas => {
+    //     let pdf = new jsPDF('p', 'mm', 'a4');
+    //     pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 211, 298);
+    //     pdf.save("sample.pdf");
+    //     });
+    //     doc.html(document.getElementById('contentToPrint'), {
+    //     callback: function(doc) {
+    //         // Save the PDF
+    //         doc.save('document-html.pdf');
+    //     },
+    //     margin: [10, 10, 10, 10],
+    //     autoPaging: 'text',
+    //     x: 0,
+    //     y: 0,
+    //     width: 190, //target width in the PDF document
+    //     windowWidth: 675 //window width in CSS pixels
+    // });
+      });
+      
 </script>
+<script src="./Arial-normal.js"></script>
 
 </body>
 </html>

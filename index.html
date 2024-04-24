@@ -7,11 +7,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.3/moment.min.js"></script>
     <style>
+        @font-face {
+            font-family: DubiFont;
+            src: url(DubaiW23-Regular.woff);
+        }
         body {
             direction: rtl;
             background-color: #5258b0;
+            font-family: "DubiFont";
         }
         .worker-section {
             border: 1px solid #fa66ab;
@@ -20,16 +25,11 @@
         }
 
 
-/* Arabic text alignment */
-body {
-    direction: rtl;
-    font-family: Arial, sans-serif;
-}
 
 /* Form container */
 #permitForm {
     width: 80%;
-    margin: 0 auto;
+    margin:45px auto;
     padding: 20px;
     border-radius: 10px;
     background-color: #fff;
@@ -40,13 +40,14 @@ body {
 label {
     display: block;
     margin-bottom: 8px;
-    color: #333;
-    font-size: 16px;
+    color: #5258b0;
+    font-size: 25px;
 }
 
 /* Input fields */
 input[type="text"],
-input[type="date"] {
+input[type="date"],
+input[type="tel"]{
     width: 95%;
     padding: 12px;
     margin-bottom: 20px;
@@ -59,6 +60,10 @@ input[type="date"] {
 /* Change border color on focus */
 input[type="text"]:focus,
 input[type="date"]:focus,
+input[type="tel"]:focus {
+    outline: none;
+    border-color: #fa66ab;
+}
 #signature:focus {
     outline: none; /* Remove default outline */
 }
@@ -151,11 +156,12 @@ button[type="button"]:hover {
     <input type="text" id="purpose" name="purpose"><br><br>
 
     <label for="startDate">تاريخ بداية التصريح:</label>
-    <input type="date" id="startDate" name="startDate" min=""><br><br>
+    <input type="tel" maxlength="10" placeholder="dd/mm/yyyy"
+    oninput="this.value = DDMMYYYY(this.value, event)" ><br><br>
 
     <label for="endDate">تاريخ نهاية التصريح:</label>
-    <input type="date" id="endDate" name="endDate" min=""><br><br>
-
+    <input type="tel" maxlength="10" placeholder="dd/mm/yyyy"
+    oninput="this.value = DDMMYYYY(this.value, event)" ><br><br>
     <div id="workers">
         <!-- أسماء العمال سيتم إضافتها هنا -->
     </div>
@@ -169,6 +175,18 @@ button[type="button"]:hover {
     <button type="submit" id="submit">إنشاء التصريح</button>
 </form>
 <script>
+    function DDMMYYYY(value, event) {
+      let newValue = value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');
+    
+      const dayOrMonth = (index) => index % 2 === 1 && index < 4;
+    
+      // on delete key.  
+      if (!event.data) {
+        return value;
+      }
+    
+      return newValue.split('').map((v, i) => dayOrMonth(i) ? v + '/' : v).join('');;
+    }
 var workersCount = 0;
 function addWorker() {
     workersCount++;
@@ -269,60 +287,12 @@ document.getElementById('submit').addEventListener('click', function(e) {
          })
          ;
          element.setAttribute('id', 'contentToPrint');
-        document.body.appendChild(element);
+            document.body.appendChild(element);
          console.log(element);
-         window.jsPDF = window.jspdf.jsPDF;
-         // Create a new PDF using the form element
-        //  html2pdf().from(element).save();
-        //  Get the HTML element to be converted to PDF
-        const elemente = document.getElementById('permitForm');
-        html2canvas(elemente).then(canvas => {
-        const imgData = canvas.toDataURL('image/png'); // Convert canvas to image data
-        const pdf = new jsPDF(); // Initialize jsPDF
-        const imgProps = pdf.getImageProperties(imgData);
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight); // Add image to PDF
-        pdf.save('converted-document.pdf'); // Save PDF
-        });
-        // convert HTML to PDF using jsPDF  
-        // window.jsPDF = window.jspdf.jsPDF;
-        // var doc = new jsPDF()
-        // doc.text("بسم الله", 10, 10);
-        // doc.save("d.pdf")
-    //     doc.html(document.getElementById('contentToPrint'), {
-    //     callback: function(doc) {
-    //         // Save the PDF
-    //         doc.save('document-html.pdf');
-    //     },
-    //     margin: [10, 10, 10, 10],
-    //     autoPaging: 'text',
-    //     x: 0,
-    //     y: 0,
-    //     width: 190, //target width in the PDF document
-    //     windowWidth: 675 //window width in CSS pixels
-    // });
-    //     html2canvas(document.getElementById('contentToPrint')).then(canvas => {
-    //     let pdf = new jsPDF('p', 'mm', 'a4');
-    //     pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 211, 298);
-    //     pdf.save("sample.pdf");
-    //     });
-    //     doc.html(document.getElementById('contentToPrint'), {
-    //     callback: function(doc) {
-    //         // Save the PDF
-    //         doc.save('document-html.pdf');
-    //     },
-    //     margin: [10, 10, 10, 10],
-    //     autoPaging: 'text',
-    //     x: 0,
-    //     y: 0,
-    //     width: 190, //target width in the PDF document
-    //     windowWidth: 675 //window width in CSS pixels
-    // });
       });
       
 </script>
-<script src="./Arial-normal.js"></script>
+<!-- <script src="./Arial-normal.js"></script> -->
 
 </body>
 </html>
